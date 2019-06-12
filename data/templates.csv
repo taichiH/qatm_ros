@@ -1,0 +1,6 @@
+,path,thresh,label
+0,templates/milk.png,0.95,milk
+1,templates/mixjuice.png,0.95,mixjuice
+2,templates/coffee.png,0.95,coffee
+3,templates/dars.png,0.95,dars
+4,templates/potechi.png,0.95,potechi
