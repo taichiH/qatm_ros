@@ -35,9 +35,6 @@ import torchvision
 from torchvision import models, transforms, utils
 import copy
 from utils import *
-# %matplotlib inline
-
-# # CONVERT IMAGE TO TENSOR
 
 class ImageDataset(torch.utils.data.Dataset):
     def __init__(self, pkg_path, raw_image, thresh_csv=None, transform=None, image_name='input'):
@@ -87,8 +84,6 @@ class ImageDataset(torch.utils.data.Dataset):
                 'thresh': thresh,
                 'label': label}
 
-
-# ### EXTRACT FEATURE
 class Featex():
     def __init__(self, model, use_cuda):
         self.use_cuda = use_cuda
@@ -102,13 +97,13 @@ class Featex():
             self.model = self.model.cuda()
         self.model[2].register_forward_hook(self.save_feature1)
         self.model[16].register_forward_hook(self.save_feature2)
-        
+
     def save_feature1(self, module, input, output):
         self.feature1 = output.detach()
-    
+
     def save_feature2(self, module, input, output):
         self.feature2 = output.detach()
-        
+
     def __call__(self, input, mode='big'):
         if self.use_cuda:
             input = input.cuda()
@@ -116,7 +111,7 @@ class Featex():
         if mode=='big':
             # resize feature1 to the same size of feature2
             self.feature1 = F.interpolate(self.feature1, size=(self.feature2.size()[2], self.feature2.size()[3]), mode='bilinear', align_corners=True)
-        else:        
+        else:
             # resize feature2 to the same size of feature1
             self.feature2 = F.interpolate(self.feature2, size=(self.feature1.size()[2], self.feature1.size()[3]), mode='bilinear', align_corners=True)
         return torch.cat((self.feature1, self.feature2), dim=1)
@@ -189,7 +184,6 @@ class QATM():
         bs, H, W, _, _ = input_shape
         return (bs, H, W, 1)
 
-# nms
 def nms_multi(scores, w_array, h_array, thresh_list, label_list):
     indices = np.arange(scores.shape[0])
     maxes = np.max(scores.reshape(scores.shape[0], -1), axis=1)
@@ -242,7 +236,6 @@ def nms_multi(scores, w_array, h_array, thresh_list, label_list):
     boxes = np.array([[x1[keep], y1[keep]], [x2[keep], y2[keep]]]).transpose(2,0,1)
     return boxes, np.array(keep_index)
 
-# plot
 def plot_result(image_raw, boxes, label, color_dict, show=False, save_name=None):
     # plot result
     d_img = image_raw.copy()
@@ -271,9 +264,6 @@ def plot_result_multi(image_raw, boxes, labels, indices, show=False, save_name=N
         cv2.imwrite(save_name, d_img[:,:,::-1])
     return d_img
 
-
-# # RUNNING
-
 def run_one_sample(model, template, image, image_name):
     val = model(template, image, image_name)
     if val.is_cuda:
@@ -294,7 +284,6 @@ def run_one_sample(model, template, image, image_name):
         score = np.exp(score / (h*w)) # reverse number range back after computing geometry average
         scores.append(score)
     return np.array(scores)
-
 
 def run_multi_sample(model, dataset):
     scores = None

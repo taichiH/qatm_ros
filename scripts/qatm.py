@@ -91,12 +91,10 @@ class QATM():
         dataset = ImageDataset(
                pkg_dir, raw_image, thresh_csv=self.templates, image_name=str(self.index))
 
-        rospy.loginfo("calculate score...")
         scores, w_array, h_array, thresh_list, label_list = run_multi_sample(self.model, dataset)
-
-        rospy.loginfo("nms...")
         boxes, indices = nms_multi(scores, w_array, h_array, thresh_list, label_list)
-        output_image = plot_result_multi(dataset.image_raw, boxes, label_list, indices, show=False, save_name=None)
+        output_image = plot_result_multi(
+               dataset.image_raw, boxes, label_list, indices, show=False, save_name=None)
 
         labels_msg = LabelArray()
         rects_msg = RectArray()
