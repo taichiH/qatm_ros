@@ -63,7 +63,6 @@ from mod import *
 class Qatm():
 
     def __init__(self):
-        self.index = 0
         self.bridge = cv_bridge.CvBridge()
         self.use_cuda = rospy.get_param('~use_cuda', True)
         self.thresh = rospy.get_param('~thresh', 0.95)
@@ -90,7 +89,7 @@ class Qatm():
             return
 
         dataset = ImageDataset(
-               pkg_dir, raw_image, self.templates_dir, thresh=self.thresh, image_name=str(self.index))
+               pkg_dir, raw_image, self.templates_dir, thresh=self.thresh, image_name=str(imgmsg.header.stamp))
 
         scores, w_array, h_array, label_list = calculate_scores(self.model, dataset)
         boxes, indices = nms(scores, w_array, h_array, dataset.thresh, label_list)
@@ -117,7 +116,6 @@ class Qatm():
         msg_viz = cv_bridge.CvBridge().cv2_to_imgmsg(output_image, encoding='bgr8')
         msg_viz.header = imgmsg.header
         self.pub_viz.publish(msg_viz)
-        self.index += 1
 
 
 if __name__ == '__main__':
