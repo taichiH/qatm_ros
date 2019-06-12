@@ -88,13 +88,7 @@ class ImageDataset(torch.utils.data.Dataset):
                 'label': label}
 
 
-template_dir = 'template/'
-image_path = 'sample/sample1.jpg'
-dataset = ImageDataset(Path(template_dir), image_path, thresh_csv='thresh_template.csv')
-
-
 # ### EXTRACT FEATURE
-
 class Featex():
     def __init__(self, model, use_cuda):
         self.use_cuda = use_cuda
@@ -308,7 +302,7 @@ def run_multi_sample(model, dataset):
     h_array = []
     thresh_list = []
     label_list = []
-    for i in range(len(dataset) - 1):
+    for i in range(len(dataset)):
         score = run_one_sample(
             model, dataset[i]['template'], dataset[i]['image'], dataset[i]['image_name'])
         if scores is None:
