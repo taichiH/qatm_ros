@@ -67,7 +67,7 @@ class Qatm():
         self.bridge = cv_bridge.CvBridge()
         self.use_cuda = rospy.get_param('~use_cuda', True)
         self.thresh = rospy.get_param('~thresh', 0.95)
-        self.templates_dir = rospy.get_param('~templates', os.path.join(pkg_dir, 'data/templates.csv'))
+        self.templates_dir = rospy.get_param('~templates_dir', os.path.join(pkg_dir, 'templates'))
         self.alpha = rospy.get_param('~alpha', 25)
 
         rospy.loginfo("define model...")

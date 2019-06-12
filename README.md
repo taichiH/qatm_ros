@@ -41,5 +41,21 @@ roslaunch qatm_ros qatm.launch use_cuda:=false
 
 ### Parameters
 `use_cuda` (Boolean, default:`true`) \
-`templates` (String, default:qatm_ros/data/templates.csv) \
+`threshold` (Double, default:`0.95`)
+`templates_dir` (String, default:$(find qatm_ros)/templates) \
 `alpha` (Int, default:`25`)
+
+## Create original templates
+create template image file named like this package sample templates and put files on templates directory.\```
+```
+original_templates/template-1.png
+original_templates/template-2.png
+```
+change template_dir param on launch file
+```
+<arg name="templates_dir" default="$(find qatm_ros)/original_templates" />
+```
+or
+```
+roslaunch qatm_ros qatm.launch templates_dir:=${PKG_PATH}/original_templates
+```

@@ -1,7 +1,7 @@
 <launch>
   <arg name="use_cuda" default="true" />
   <arg name="threshold" default="0.95" />
-  <arg name="templates" default="$(find qatm_ros)/templates" />
+  <arg name="templates_dir" default="$(find qatm_ros)/templates" />
   <arg name="alpha" default="25" />
 
   <arg name="input_image" default="/remote/openni_camera/rgb/image_rect_color" />
@@ -11,7 +11,7 @@
         output="screen">
     <rosparam subst_value="true">
       use_cuda: $(arg use_cuda)
-      templates: $(arg templates)
+      templates_dir: $(arg templates_dir)
       threshold: $(arg threshold)
       alpha: $(arg alpha)
     </rosparam>
