@@ -37,8 +37,8 @@ import copy
 from utils import *
 
 class ImageDataset(torch.utils.data.Dataset):
-    def __init__(self, pkg_path, raw_image, thresh_csv=None, transform=None, image_name='input'):
-        self.pkg_path = pkg_path
+    def __init__(self, pkg_path, raw_image, templates_dir, thresh=0.9, transform=None, image_name='input'):
+        self.templates_path = os.path.join(pkg_path, templates_dir)
         self.transform = transform
 
         if not self.transform:
@@ -52,10 +52,8 @@ class ImageDataset(torch.utils.data.Dataset):
 
         self.image_name = image_name
         self.image_raw = raw_image
-
-        self.templates = None
-        if thresh_csv:
-            self.templates = pd.read_csv(thresh_csv)
+        self.templates = os.listdir(templates_dir)
+        self.thresh = thresh
 
         if self.transform:
             self.image = self.transform(self.image_raw).unsqueeze(0)
@@ -64,13 +62,9 @@ class ImageDataset(torch.utils.data.Dataset):
         return len(self.templates)
 
     def __getitem__(self, idx):
-        if self.templates is None:
-            return None
-
-        label = self.templates.label[idx]
-        thresh = self.templates.thresh[idx]
-        template_path = os.path.join(self.pkg_path, self.templates.path[idx])
-        template = cv2.imread(template_path)
+        label = self.templates[idx].split('-')[0]
+        thresh = self.thresh
+        template = cv2.imread(os.path.join(self.templates_path, self.templates[idx]))
         if self.transform:
             template = self.transform(template)
 
@@ -78,7 +72,6 @@ class ImageDataset(torch.utils.data.Dataset):
                 'image_raw': self.image_raw,
                 'image_name': self.image_name,
                 'template': template.unsqueeze(0),
-                'template_name': template_path,
                 'template_h': template.size()[-2],
                 'template_w': template.size()[-1],
                 'thresh': thresh,
@@ -184,7 +177,7 @@ class QATM():
         bs, H, W, _, _ = input_shape
         return (bs, H, W, 1)
 
-def nms_multi(scores, w_array, h_array, thresh_list, label_list):
+def nms_multi(scores, w_array, h_array, thresh, label_list):
     indices = np.arange(scores.shape[0])
     maxes = np.max(scores.reshape(scores.shape[0], -1), axis=1)
     # omit not-matching templates
@@ -194,7 +187,7 @@ def nms_multi(scores, w_array, h_array, thresh_list, label_list):
     dots = None
     dos_indices = None
     for index, score in zip(indices_omit, scores_omit):
-        dot = np.array(np.where(score > thresh_list[index]*score.max()))
+        dot = np.array(np.where(score > thresh*score.max()))
         if dots is None:
             dots = dot
             dots_indices = np.ones(dot.shape[-1]) * index
@@ -289,7 +282,6 @@ def run_multi_sample(model, dataset):
     scores = None
     w_array = []
     h_array = []
-    thresh_list = []
     label_list = []
     for i in range(len(dataset)):
         score = run_one_sample(
@@ -300,6 +292,5 @@ def run_multi_sample(model, dataset):
             scores = np.concatenate([scores, score], axis=0)
         w_array.append(dataset[i]['template_w'])
         h_array.append(dataset[i]['template_h'])
-        thresh_list.append(dataset[i]['thresh'])
         label_list.append(dataset[i]['label'])
-    return np.array(scores), np.array(w_array), np.array(h_array), thresh_list, label_list
+    return np.array(scores), np.array(w_array), np.array(h_array), label_list

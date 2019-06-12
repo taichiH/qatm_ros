@@ -66,7 +66,8 @@ class QATM():
         self.index = 0
         self.bridge = cv_bridge.CvBridge()
         self.use_cuda = rospy.get_param('~use_cuda', True)
-        self.templates = rospy.get_param('~templates', os.path.join(pkg_dir, 'data/templates.csv'))
+        self.thresh = rospy.get_param('~thresh', 0.95)
+        self.templates_dir = rospy.get_param('~templates', os.path.join(pkg_dir, 'data/templates.csv'))
         self.alpha = rospy.get_param('~alpha', 25)
 
         rospy.loginfo("define model...")
@@ -89,10 +90,10 @@ class QATM():
             return
 
         dataset = ImageDataset(
-               pkg_dir, raw_image, thresh_csv=self.templates, image_name=str(self.index))
+               pkg_dir, raw_image, self.templates_dir, thresh=self.thresh, image_name=str(self.index))
 
-        scores, w_array, h_array, thresh_list, label_list = run_multi_sample(self.model, dataset)
-        boxes, indices = nms_multi(scores, w_array, h_array, thresh_list, label_list)
+        scores, w_array, h_array, label_list = run_multi_sample(self.model, dataset)
+        boxes, indices = nms_multi(scores, w_array, h_array, dataset.thresh, label_list)
         output_image = plot_result_multi(
                dataset.image_raw, boxes, label_list, indices, show=False, save_name=None)
 
