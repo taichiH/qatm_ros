@@ -177,7 +177,7 @@ class QATM():
         bs, H, W, _, _ = input_shape
         return (bs, H, W, 1)
 
-def nms_multi(scores, w_array, h_array, thresh, label_list):
+def nms(scores, w_array, h_array, thresh, label_list):
     indices = np.arange(scores.shape[0])
     maxes = np.max(scores.reshape(scores.shape[0], -1), axis=1)
     # omit not-matching templates
@@ -242,7 +242,7 @@ def plot_result(image_raw, boxes, label, color_dict, show=False, save_name=None)
         cv2.imwrite(save_name, d_img[:,:,::-1])
     return d_img
 
-def plot_result_multi(image_raw, boxes, labels, indices, show=False, save_name=None, color_list=None):
+def plot_results(image_raw, boxes, labels, indices, show=False, save_name=None, color_list=None):
     d_img = image_raw.copy()
 
     color_dict = {}
@@ -257,7 +257,7 @@ def plot_result_multi(image_raw, boxes, labels, indices, show=False, save_name=N
         cv2.imwrite(save_name, d_img[:,:,::-1])
     return d_img
 
-def run_one_sample(model, template, image, image_name):
+def calculate_score(model, template, image, image_name):
     val = model(template, image, image_name)
     if val.is_cuda:
         val = val.cpu()
@@ -278,13 +278,13 @@ def run_one_sample(model, template, image, image_name):
         scores.append(score)
     return np.array(scores)
 
-def run_multi_sample(model, dataset):
+def calculate_scores(model, dataset):
     scores = None
     w_array = []
     h_array = []
     label_list = []
     for i in range(len(dataset)):
-        score = run_one_sample(
+        score = calculate_score(
             model, dataset[i]['template'], dataset[i]['image'], dataset[i]['image_name'])
         if scores is None:
             scores = score

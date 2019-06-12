@@ -92,9 +92,9 @@ class QATM():
         dataset = ImageDataset(
                pkg_dir, raw_image, self.templates_dir, thresh=self.thresh, image_name=str(self.index))
 
-        scores, w_array, h_array, label_list = run_multi_sample(self.model, dataset)
-        boxes, indices = nms_multi(scores, w_array, h_array, dataset.thresh, label_list)
-        output_image = plot_result_multi(
+        scores, w_array, h_array, label_list = calculate_scores(self.model, dataset)
+        boxes, indices = nms(scores, w_array, h_array, dataset.thresh, label_list)
+        output_image = plot_results(
                dataset.image_raw, boxes, label_list, indices, show=False, save_name=None)
 
         labels_msg = LabelArray()
