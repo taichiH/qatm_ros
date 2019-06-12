@@ -60,7 +60,7 @@ exec(code,  module.__dict__)
 
 from mod import *
 
-class QATM():
+class Qatm():
 
     def __init__(self):
         self.index = 0
@@ -122,5 +122,5 @@ class QATM():
 
 if __name__ == '__main__':
     rospy.init_node('qatm_template_matching')
-    qatm = QATM()
+    qatm = Qatm()
     rospy.spin()

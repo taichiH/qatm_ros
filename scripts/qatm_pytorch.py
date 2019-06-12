@@ -77,7 +77,7 @@ class ImageDataset(torch.utils.data.Dataset):
                 'thresh': thresh,
                 'label': label}
 
-class Featex():
+class FeatureExtractor():
     def __init__(self, model, use_cuda):
         self.use_cuda = use_cuda
         self.feature1 = None
@@ -129,7 +129,7 @@ class MyNormLayer():
 class CreateModel():
     def __init__(self, alpha, model, use_cuda):
         self.alpha = alpha
-        self.featex = Featex(model, use_cuda)
+        self.featex = FeatureExtractor(model, use_cuda)
         self.I_feat = None
         self.I_feat_name = None
     def __call__(self, template, image, image_name):
@@ -143,7 +143,7 @@ class CreateModel():
             T_feat_i = T_feat[i].unsqueeze(0)
             I_feat_norm, T_feat_i = MyNormLayer()(self.I_feat, T_feat_i)
             dist = torch.einsum("xcab,xcde->xabde", I_feat_norm / torch.norm(I_feat_norm, dim=1, keepdim=True), T_feat_i / torch.norm(T_feat_i, dim=1, keepdim=True))
-            conf_map = QATM(self.alpha)(dist)
+            conf_map = QatmCore(self.alpha)(dist)
             if conf_maps is None:
                 conf_maps = conf_map
             else:
@@ -151,7 +151,7 @@ class CreateModel():
         return conf_maps
 
 
-class QATM():
+class QatmCore():
     def __init__(self, alpha):
         self.alpha = alpha
 
