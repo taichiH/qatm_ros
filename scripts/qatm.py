@@ -68,6 +68,8 @@ class Qatm():
         self.thresh = rospy.get_param('~thresh', 0.95)
         self.templates_dir = rospy.get_param('~templates_dir', os.path.join(pkg_dir, 'templates'))
         self.alpha = rospy.get_param('~alpha', 25)
+        self.image_width = None
+        self.image_height = None
 
         rospy.loginfo("define model...")
         self.model = CreateModel(
@@ -79,9 +81,37 @@ class Qatm():
 
         rospy.Subscriber('~input', Image, self.callback, queue_size=1)
 
+    def check_width(self, val):
+        if val < 0:
+            px = 0
+        elif val > self.image_width:
+            px = self.image_width
+        else:
+            px = val
+        return px
+
+    def check_height(self, val):
+        if val < 0:
+            px = 0
+        elif val > self.image_height:
+            px = self.image_height
+        else:
+            px = val
+        return px
+
+    def check_out_of_image(self, box):
+        lt_x = self.check_width(box[0][0])
+        lt_y = self.check_height(box[0][1])
+        rb_x = self.check_width(box[1][0])
+        rb_y = self.check_height(box[1][1])
+        width = rb_x - lt_x
+        height = rb_y - lt_y
+        return lt_x, lt_y, width, height
 
     def callback(self, imgmsg):
         raw_image = None
+        self.image_width = imgmsg.width
+        self.image_height = imgmsg.height
         try:
             raw_image = self.bridge.imgmsg_to_cv2(imgmsg, desired_encoding='bgr8')
         except:
@@ -102,10 +132,18 @@ class Qatm():
             rect_msg = Rect()
             label_msg = Label()
             box = boxes[i][None, :,:][0]
-            rect_msg.x = box[0][0]
-            rect_msg.y = box[0][1]
-            rect_msg.width = box[1][0] - box[0][0]
-            rect_msg.height = box[1][1] - box[0][1]
+
+            x, y, width, height = self.check_out_of_image(box)
+            rect_msg.x = x
+            rect_msg.y = y
+            rect_msg.width = width
+            rect_msg.height = height
+
+            # rect_msg.x = box[0][0]
+            # rect_msg.y = box[0][1]
+            # rect_msg.width = box[1][0] - box[0][0]
+            # rect_msg.height = box[1][1] - box[0][1]
+
             label_msg.name = label_list[indices[i]]
             rects_msg.rects.append(rect_msg)
             labels_msg.labels.append(label_msg)
