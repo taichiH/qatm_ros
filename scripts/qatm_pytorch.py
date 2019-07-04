@@ -185,7 +185,7 @@ def nms(scores, w_array, h_array, thresh, label_list):
     indices_omit = indices[maxes > 0.1 * maxes.max()]
     # extract candidate pixels from scores
     dots = None
-    dos_indices = None
+    dots_indices = None
     for index, score in zip(indices_omit, scores_omit):
         dot = np.array(np.where(score > thresh*score.max()))
         if dots is None:
