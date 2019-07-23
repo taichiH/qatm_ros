@@ -3,6 +3,7 @@
   <arg name="threshold" default="0.95" />
   <arg name="templates_dir" default="$(find qatm_ros)/templates" />
   <arg name="alpha" default="25" />
+  <arg name="resize_scale" default="1" />
 
   <arg name="input_image" default="/remote/openni_camera/rgb/image_rect_color" />
 
@@ -14,6 +15,7 @@
       templates_dir: $(arg templates_dir)
       threshold: $(arg threshold)
       alpha: $(arg alpha)
+      resize_scale: $(arg resize_scale)
     </rosparam>
     <remap from="~input" to="$(arg input_image)" />
   </node>

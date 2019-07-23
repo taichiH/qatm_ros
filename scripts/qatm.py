@@ -68,6 +68,7 @@ class Qatm():
         self.thresh = rospy.get_param('~thresh', 0.95)
         self.templates_dir = rospy.get_param('~templates_dir', os.path.join(pkg_dir, 'templates'))
         self.alpha = rospy.get_param('~alpha', 25)
+        self.resize_scale = rospy.get_param('~resize_scale', 1)
         self.image_width = None
         self.image_height = None
 
@@ -78,6 +79,7 @@ class Qatm():
 
         self.labels_pub = rospy.Publisher('~output/labels', LabelArray, queue_size=1)
         self.rects_pub = rospy.Publisher('~output/rects', RectArray, queue_size=1)
+        self.original_size_rects_pub = rospy.Publisher('~output/original_size_rects', RectArray, queue_size=1)
         self.pub_viz = rospy.Publisher('~output', Image, queue_size=1)
 
         rospy.Subscriber('~input', Image, self.callback, queue_size=1)
@@ -129,9 +131,12 @@ class Qatm():
 
         labels_msg = LabelArray()
         rects_msg = RectArray()
+        original_size_rects_msg = RectArray()
         for i in range(len(indices)):
             rect_msg = Rect()
             label_msg = Label()
+            original_size_rect_msg = Rect()
+
             box = boxes[i][None, :,:][0]
 
             x, y, width, height = self.check_out_of_image(box)
@@ -139,6 +144,11 @@ class Qatm():
             rect_msg.y = y
             rect_msg.width = width
             rect_msg.height = height
+
+            original_size_rect_msg.x = x * 1 / self.resize_scale
+            original_size_rect_msg.y = y * 1 / self.resize_scale
+            original_size_rect_msg.width = width * 1 / self.resize_scale
+            original_size_rect_msg.height = height * 1 / self.resize_scale
 
             # rect_msg.x = box[0][0]
             # rect_msg.y = box[0][1]
@@ -148,11 +158,15 @@ class Qatm():
             label_msg.name = label_list[indices[i]]
             rects_msg.rects.append(rect_msg)
             labels_msg.labels.append(label_msg)
+            original_size_rects_msg.rects.append(original_size_rect_msg)
 
         rects_msg.header = imgmsg.header
         labels_msg.header = imgmsg.header
+        original_size_rects_msg.header = imgmsg.header
+
         self.labels_pub.publish(labels_msg)
         self.rects_pub.publish(rects_msg)
+        self.original_size_rects_pub.publish(original_size_rects_msg)
 
         msg_viz = cv_bridge.CvBridge().cv2_to_imgmsg(output_image, encoding='bgr8')
         msg_viz.header = imgmsg.header
