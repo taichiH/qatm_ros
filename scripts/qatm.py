@@ -74,6 +74,7 @@ class Qatm():
         rospy.loginfo("define model...")
         self.model = CreateModel(
             model=models.vgg19(pretrained=True).features, alpha=self.alpha, use_cuda=self.use_cuda)
+        rospy.loginfo("done define model ")
 
         self.labels_pub = rospy.Publisher('~output/labels', LabelArray, queue_size=1)
         self.rects_pub = rospy.Publisher('~output/rects', RectArray, queue_size=1)
@@ -148,6 +149,8 @@ class Qatm():
             rects_msg.rects.append(rect_msg)
             labels_msg.labels.append(label_msg)
 
+        rects_msg.header = imgmsg.header
+        labels_msg.header = imgmsg.header
         self.labels_pub.publish(labels_msg)
         self.rects_pub.publish(rects_msg)
 
